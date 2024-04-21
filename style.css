@@ -1,0 +1,29 @@
+:root {
+    font-size: 3em;
+    font-family: sans-serif;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    display: grid;
+    place-items: center;
+}
+
+main {
+    display: grid;
+    place-items: center;
+    height: 800px;
+    width: 800px;
+    & > * {
+        display: grid;
+        place-items: center;
+        height: 100%;
+        width: 100%;
+        border: 3px solid black;
+    }
+}
+
+.hidden {
+    color: transparent;
+}
