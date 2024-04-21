@@ -1,7 +1,7 @@
 let main = document.getElementById("main");
 let table = []
 let size = 5
-let bombs = 5
+let bombs = 3
 
 main.style.gridTemplateColumns = `repeat(${size}, 1fr)`
 main.style.gridTemplateRows = `repeat(${size}, 1fr)`
@@ -46,8 +46,11 @@ function checkVictory() {
     listBomb.forEach((e) => {
         if (e.classList.contains("hidden")) listClass.push(e)
     })
-    if (listClass.length == 1) {
-        alert("you win !")
+    if (listClass.length === 1) {
+        document.getElementsByTagName("h1")[0].innerHTML = "You win!"
+        Array.from(element).forEach((e) => {
+            e.classList.remove("hidden")
+        })
         setTimeout(() => {
             window.location.reload()
         }, 2000)
@@ -65,6 +68,7 @@ table.forEach((array) => {
                 Array.from(document.getElementsByClassName("hidden")).forEach((e) => {
                     e.classList.remove("hidden")
                 })
+                document.getElementsByTagName("h1")[0].innerHTML = "You lost!"
                 setTimeout(() => {
                     window.location.reload()
                 }, 2000)

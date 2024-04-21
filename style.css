@@ -10,6 +10,11 @@ html, body {
     place-items: center;
 }
 
+h1 {
+    position: fixed;
+    top: 20px;
+}
+
 main {
     display: grid;
     place-items: center;
@@ -22,6 +27,8 @@ main {
         height: 100%;
         width: 100%;
         border: 3px solid black;
+        user-select: none;
+        cursor: pointer;
     }
 }
 

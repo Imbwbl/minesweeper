@@ -1,3 +1,4 @@
 bun.lockb
 node_modules/*
 package.json
+.idea/*
