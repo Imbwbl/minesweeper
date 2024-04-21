@@ -1,7 +1,7 @@
 let main = document.getElementById("main");
 let table = []
-let size = 5
-let bombs = 3
+let size = 9
+let bombs = 10
 
 main.style.gridTemplateColumns = `repeat(${size}, 1fr)`
 main.style.gridTemplateRows = `repeat(${size}, 1fr)`
