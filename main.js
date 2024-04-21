@@ -53,7 +53,7 @@ function checkVictory() {
         })
         setTimeout(() => {
             window.location.reload()
-        }, 2000)
+        }, 4000)
     }
 }
 
