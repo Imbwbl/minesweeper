@@ -5,7 +5,6 @@ let bombs = 5
 
 main.style.gridTemplateColumns = `repeat(${size}, 1fr)`
 main.style.gridTemplateRows = `repeat(${size}, 1fr)`
-//m = mine ; n = nothing
 for (let i = 0; i < size; i++) {
     table.push([])
     for (let j = 0; j < size; j++) {
@@ -17,27 +16,21 @@ function genMine() {
     let array = Math.floor(Math.random() * size);
     let rand = Math.floor(Math.random() * size);
     if (table[array][rand] !== "💣") {
-      table[array][rand] = "💣";
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
-          if (i === 0 && j === 0) {
-            continue;
-          }
-          let newRow = array + i;
-          let newCol = rand + j;
-          if (
-            newRow >= 0 &&
-            newRow < size &&
-            newCol >= 0 &&
-            newCol < size &&
-            table[newRow][newCol] !== "💣"
-          ) {
-            table[newRow][newCol] = parseInt(table[newRow][newCol]) + 1;
-          }
+        table[array][rand] = "💣";
+        for (let i = -1; i <= 1; i++) {
+            for (let j = -1; j <= 1; j++) {
+                if (i === 0 && j === 0) {
+                    continue;
+                }
+                let newRow = array + i;
+                let newCol = rand + j;
+                if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size && table[newRow][newCol] !== "💣") {
+                    table[newRow][newCol] = parseInt(table[newRow][newCol]) + 1;
+                }
+            }
         }
-      }
     } else {
-      genMine();
+        genMine();
     }
 }
 
@@ -55,12 +48,14 @@ function checkVictory() {
     })
     if (listClass.length == 1) {
         alert("you win !")
-        setTimeout(() => {window.location.reload()}, 2000)
+        setTimeout(() => {
+            window.location.reload()
+        }, 2000)
     }
 }
-  
-table.forEach((array) =>{
-    array.forEach((block) =>{
+
+table.forEach((array) => {
+    array.forEach((block) => {
         let button = document.createElement("a")
         button.textContent = block
         button.classList.add('hidden');
@@ -70,8 +65,10 @@ table.forEach((array) =>{
                 Array.from(document.getElementsByClassName("hidden")).forEach((e) => {
                     e.classList.remove("hidden")
                 })
-                setTimeout(() => {window.location.reload()}, 2000)
-            }            
+                setTimeout(() => {
+                    window.location.reload()
+                }, 2000)
+            }
             if (button.classList.contains('hidden')) {
                 button.classList.remove('hidden');
             }
