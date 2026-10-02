@@ -4,14 +4,66 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self'; object-src 'none'">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <meta name="color-scheme" content="light dark">
     <link href="style.css" rel="stylesheet">
     <script defer src="main.js"></script>
     <title>Démineur</title>
 </head>
 <body>
-<h1></h1>
-<main id="main">
-</main>
+<div class="app">
+    <header>
+        <h1>Démineur</h1>
+        <p id="status" aria-live="polite"></p>
+    </header>
+
+    <div class="bar">
+        <span id="bombs-left" class="lcd" title="Mines restantes">0</span>
+        <button id="restart" type="button">Nouvelle partie</button>
+        <button id="flag-mode" type="button" aria-pressed="false" title="Mode drapeau (clic droit sur ordinateur)">⚑</button>
+        <button id="open-settings" type="button">Réglages</button>
+        <span id="timer" class="lcd" title="Temps">0</span>
+    </div>
+
+    <main id="main"></main>
+</div>
+
+<dialog id="settings">
+    <form id="settings-form" method="dialog">
+        <h2>Réglages</h2>
+
+        <label>Difficulté
+            <select id="level">
+                <option value="easy">Facile : 9×9, 10 mines</option>
+                <option value="medium">Moyen : 16×16, 40 mines</option>
+                <option value="hard">Difficile : 20×20, 70 mines</option>
+                <option value="custom">Personnalisé</option>
+            </select>
+        </label>
+
+        <div class="row">
+            <label>Taille
+                <input id="size" type="number" min="5" max="24" inputmode="numeric">
+            </label>
+            <label>Mines
+                <input id="bombs" type="number" min="1" inputmode="numeric">
+            </label>
+        </div>
+
+        <label>Thème
+            <select id="theme">
+                <option value="auto">Automatique</option>
+                <option value="light">Clair</option>
+                <option value="dark">Sombre</option>
+            </select>
+        </label>
+
+        <p id="record-info" class="note"></p>
+
+        <div class="actions">
+            <button id="reset-records" type="button" class="ghost">Effacer les records</button>
+            <button value="cancel" formnovalidate>Annuler</button>
+            <button value="apply" class="primary">Appliquer</button>
+        </div>
+    </form>
+</dialog>
 </body>
 </html>
