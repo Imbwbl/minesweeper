@@ -1,82 +1,110 @@
-let main = document.getElementById("main");
-let table = []
-let size = 9
-let bombs = 10
+(() => {
+    "use strict";
 
-main.style.gridTemplateColumns = `repeat(${size}, 1fr)`
-main.style.gridTemplateRows = `repeat(${size}, 1fr)`
-for (let i = 0; i < size; i++) {
-    table.push([])
-    for (let j = 0; j < size; j++) {
-        table[i].push(0)
-    }
-}
+    const main = document.getElementById("main");
+    const title = document.getElementsByTagName("h1")[0];
+    const size = 9;
+    const bombs = 10;
+    const total = size * size;
 
-function genMine() {
-    let array = Math.floor(Math.random() * size);
-    let rand = Math.floor(Math.random() * size);
-    if (table[array][rand] !== "💣") {
-        table[array][rand] = "💣";
-        for (let i = -1; i <= 1; i++) {
-            for (let j = -1; j <= 1; j++) {
-                if (i === 0 && j === 0) {
-                    continue;
-                }
-                let newRow = array + i;
-                let newCol = rand + j;
-                if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size && table[newRow][newCol] !== "💣") {
-                    table[newRow][newCol] = parseInt(table[newRow][newCol]) + 1;
-                }
+    main.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    main.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+    // --- État privé (dans la closure, aucune variable globale) ---
+    const keys = crypto.getRandomValues(new Uint8Array(total)); // masque par case
+    const data = new Uint8Array(total);                         // valeurs masquées (XOR)
+    const revealed = new Uint8Array(total);
+    const cells = [];
+    let generated = false;
+    let revealedCount = 0;
+    let over = false;
+
+    const MINE = 9;
+    const get = (i) => data[i] ^ keys[i];
+    const set = (i, v) => { data[i] = v ^ keys[i]; };
+
+    const neighbors = (i) => {
+        const r = Math.floor(i / size), c = i % size, out = [];
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                if (!dr && !dc) continue;
+                const nr = r + dr, nc = c + dc;
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) out.push(nr * size + nc);
             }
         }
-    } else {
-        genMine();
-    }
-}
+        return out;
+    };
 
-for (let i = 0; i < bombs; i++) genMine()
+    // Tirage non prédictible (crypto) + mines générées APRÈS le 1er clic :
+    // la case cliquée et ses voisines sont toujours sûres.
+    function generate(safeIndex) {
+        const forbidden = new Set([safeIndex, ...neighbors(safeIndex)]);
+        const pool = [];
+        for (let i = 0; i < total; i++) if (!forbidden.has(i)) pool.push(i);
 
-function checkVictory() {
-    let element = document.getElementsByTagName("a")
-    let listBomb = []
-    let listClass = []
-    Array.from(element).forEach((e) => {
-        if (!e.innerHTML.includes("💣")) listBomb.push(e)
-    })
-    listBomb.forEach((e) => {
-        if (e.classList.contains("hidden")) listClass.push(e)
-    })
-    if (listClass.length === 1) {
-        document.getElementsByTagName("h1")[0].innerHTML = "You win!"
-        Array.from(element).forEach((e) => {
-            e.classList.remove("hidden")
-        })
-        setTimeout(() => {
-            window.location.reload()
-        }, 4000)
-    }
-}
-
-table.forEach((array) => {
-    array.forEach((block) => {
-        let button = document.createElement("a")
-        button.textContent = block
-        button.classList.add('hidden');
-        button.onclick = () => {
-            checkVictory()
-            if (block === "💣") {
-                Array.from(document.getElementsByClassName("hidden")).forEach((e) => {
-                    e.classList.remove("hidden")
-                })
-                document.getElementsByTagName("h1")[0].innerHTML = "You lost!"
-                setTimeout(() => {
-                    window.location.reload()
-                }, 2000)
-            }
-            if (button.classList.contains('hidden')) {
-                button.classList.remove('hidden');
-            }
+        for (let i = pool.length - 1; i > 0; i--) { // Fisher-Yates
+            const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+            [pool[i], pool[j]] = [pool[j], pool[i]];
         }
-        main.appendChild(button)
-    })
-})
+
+        const counts = new Uint8Array(total);
+        const mines = new Set(pool.slice(0, bombs));
+        mines.forEach((m) => neighbors(m).forEach((n) => counts[n]++));
+        for (let i = 0; i < total; i++) set(i, mines.has(i) ? MINE : counts[i]);
+        generated = true;
+    }
+
+    // Le DOM ne contient une valeur qu'au moment de sa révélation
+    function show(i) {
+        if (revealed[i]) return;
+        revealed[i] = 1;
+        const v = get(i);
+        cells[i].textContent = v === MINE ? "💣" : v;
+        cells[i].classList.remove("hidden");
+        if (v !== MINE) revealedCount++;
+    }
+
+    function revealAll() {
+        for (let i = 0; i < total; i++) show(i);
+    }
+
+    function floodReveal(start) {
+        const stack = [start];
+        while (stack.length) {
+            const i = stack.pop();
+            if (revealed[i]) continue;
+            show(i);
+            if (get(i) === 0) neighbors(i).forEach((n) => { if (!revealed[n]) stack.push(n); });
+        }
+    }
+
+    function end(message, delay) {
+        over = true;
+        title.textContent = message;
+        revealAll();
+        setTimeout(() => window.location.reload(), delay);
+    }
+
+    function play(i) {
+        if (over || revealed[i]) return;
+        if (!generated) generate(i);
+
+        if (get(i) === MINE) {
+            end("You lost!", 2000);
+            return;
+        }
+        floodReveal(i);
+        if (revealedCount === total - bombs) end("You win!", 4000);
+    }
+
+    for (let i = 0; i < total; i++) {
+        const cell = document.createElement("a");
+        cell.classList.add("hidden"); // vide : aucune valeur dans le DOM
+        cell.addEventListener("click", (e) => {
+            if (!e.isTrusted) return; // ignore .click() / dispatchEvent venant de la console
+            play(i);
+        });
+        cells.push(cell);
+        main.appendChild(cell);
+    }
+})();
